@@ -1,0 +1,27 @@
+%{ if length(funding_github) > 0 ~}
+github: [${join(", ", funding_github)}]
+%{ endif ~}
+%{ if funding_ko_fi != null ~}
+ko_fi: ${funding_ko_fi}
+%{ endif ~}
+%{ if funding_patreon != null ~}
+patreon: ${funding_patreon}
+%{ endif ~}
+%{ if funding_open_collective != null ~}
+open_collective: ${funding_open_collective}
+%{ endif ~}
+%{ if funding_buy_me_a_coffee != null ~}
+buy_me_a_coffee: ${funding_buy_me_a_coffee}
+%{ endif ~}
+%{ if funding_tidelift != null ~}
+tidelift: ${funding_tidelift}
+%{ endif ~}
+%{ if funding_polar != null ~}
+polar: ${funding_polar}
+%{ endif ~}
+%{ if length(funding_custom) > 0 ~}
+custom:
+%{ for url in funding_custom ~}
+  - ${url}
+%{ endfor ~}
+%{ endif ~}

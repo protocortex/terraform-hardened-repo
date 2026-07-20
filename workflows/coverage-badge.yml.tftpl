@@ -1,0 +1,89 @@
+# SPDX-License-Identifier: Apache-2.0
+# Managed by github.com/protocortex/infra
+#
+# Templated by the hardened-repo module's main.tf (variable
+# manage_workflow_coverage_badge). Direct edits in the consuming repo are
+# overwritten on the next `terraform apply` against the hardened-repo module.
+#
+# Triggered by the CI workflow completing on main: downloads the
+# coverage-summary artifact that lint-and-test uploads, builds a
+# Shields.io endpoint JSON, and publishes it to gh-pages. No test
+# re-run; reuses the run that CI already paid for.
+#
+# Prerequisites (per consuming repo):
+#   1. CI workflow (ci.yml) is managed by the hardened-repo module -- it uploads the
+#      coverage-summary artifact automatically from the lint-and-test job.
+#   2. coverage/coverage-summary.json is produced by the test suite in
+#      Istanbul json-summary format (Vitest: reporter: ['json-summary']).
+#   3. GitHub Pages enabled on the repo (gh-pages branch allowed).
+#
+# Badge URL to use in README.md:
+#   https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/<owner>/<repo>/gh-pages/badges/coverage.json
+
+name: Coverage Badge
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: coverage-badge
+  cancel-in-progress: true
+
+jobs:
+  badge:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+            raw.githubusercontent.com:443
+
+      - name: Download coverage artifact from CI
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: coverage-summary
+          path: coverage/
+          run-id: $${{ github.event.workflow_run.id }}
+          github-token: $${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build badge JSON
+        run: |
+          mkdir -p _badges
+          PCT=$(node -e "console.log(require('./coverage/coverage-summary.json').total.lines.pct)")
+          PCT_INT=$${PCT%.*}
+          if   [ "$PCT_INT" -ge 90 ]; then COLOR=brightgreen
+          elif [ "$PCT_INT" -ge 80 ]; then COLOR=green
+          elif [ "$PCT_INT" -ge 70 ]; then COLOR=yellowgreen
+          elif [ "$PCT_INT" -ge 60 ]; then COLOR=yellow
+          elif [ "$PCT_INT" -ge 50 ]; then COLOR=orange
+          else                              COLOR=red
+          fi
+          printf '{"schemaVersion":1,"label":"coverage","message":"%s%%","color":"%s"}\n' \
+            "$PCT" "$COLOR" > _badges/coverage.json
+          cat _badges/coverage.json
+
+      - name: Publish badge to gh-pages
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
+        with:
+          github_token: $${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./_badges
+          destination_dir: badges
+          keep_files: true
+          commit_message: "chore: update coverage badge"
+          user_name: "github-actions[bot]"
+          user_email: "41898282+github-actions[bot]@users.noreply.github.com"
