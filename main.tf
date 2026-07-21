@@ -710,7 +710,7 @@ resource "github_repository_file" "biome_plugins_json" {
 locals {
   # Parse the flat var.ci_runtimes list into per-family arrays for the
   # JS CI template. `trimprefix` strips the family prefix so "node-22"
-  # becomes "22" — the value the matrix's setup-node action expects.
+  # becomes "22", the value the matrix's setup-node action expects.
   _ci_node_runtimes    = [for r in var.ci_runtimes : trimprefix(r, "node-") if startswith(r, "node-")]
   _ci_deno_runtimes    = [for r in var.ci_runtimes : trimprefix(r, "deno-") if startswith(r, "deno-")]
   _ci_bun_runtimes     = [for r in var.ci_runtimes : trimprefix(r, "bun-") if startswith(r, "bun-")]
@@ -833,7 +833,7 @@ resource "github_repository_file" "cliff_config" {
 # ─── Build / release scripts ───────────────────────────────────────────
 #
 # Loaded via file() (not templatefile()) because release.mjs is a JS file
-# with 66+ ${...} template literals — escaping each as $${...} would be
+# with 66+ ${...} template literals, escaping each as $${...} would be
 # unreadable and easy to break on every upstream change. The asset lives
 # in scripts/ (not workflows/) and keeps its native .mjs extension.
 
@@ -1188,7 +1188,7 @@ resource "github_issue_labels" "this" {
 #
 # See the manage_bot_app_secrets variable for the design rationale.
 # These resources push the same values as the org-level secrets in
-# org-secrets.tf, but at repo scope — needed for repos under user
+# org-secrets.tf, but at repo scope, needed for repos under user
 # accounts where GitHub's secret model has no user-level org-equivalent.
 # Both resources are gated on the same variable so they stay in lockstep.
 

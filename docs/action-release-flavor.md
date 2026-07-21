@@ -15,8 +15,8 @@ distinct from the npm/JSR library flavor. Enable it in a repo's module call:
 
 What it renders into the repo:
 
-- `.github/workflows/release.yml` — `workflow_dispatch` with a `version` input.
-- `cliff.toml` — Keep-a-Changelog git-cliff config.
+- `.github/workflows/release.yml`, `workflow_dispatch` with a `version` input.
+- `cliff.toml`, Keep-a-Changelog git-cliff config.
 
 Cutting a release: run the `release` workflow (Actions tab) with `version`
 (e.g. `1.0.0`). The bot-privileged job renders `CHANGELOG.md`, commits it,

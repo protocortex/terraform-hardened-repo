@@ -15,7 +15,7 @@
 #                   registries the package targets (`publish_npm`,
 #                   `publish_jsr`) and emit the deployment-environment
 #                   URLs that the GitHub UI shows on the release page.
-#                   No Terraform-side `publish_targets` flag — file
+#                   No Terraform-side `publish_targets` flag, file
 #                   presence is the source of truth.
 #
 #   2. publish-*    One job per registry, each gated by the detect
@@ -67,7 +67,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          # npm — publish when package.json is present and not marked private
+          # npm, publish when package.json is present and not marked private
           if [[ -f package.json ]] && ! jq -e '.private == true' package.json > /dev/null 2>&1; then
             PKG_NPM=$(jq -r '.name' package.json)
             echo "publish_npm=true" >> "$GITHUB_OUTPUT"
@@ -79,7 +79,7 @@ jobs:
             echo "::notice::No npm target (package.json missing or private=true)"
           fi
 
-          # JSR — publish when jsr.json or deno.json (with .name) is present
+          # JSR, publish when jsr.json or deno.json (with .name) is present
           JSR_FILE=""
           if [[ -f jsr.json ]]; then
             JSR_FILE=jsr.json

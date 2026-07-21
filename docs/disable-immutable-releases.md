@@ -1,6 +1,6 @@
 # Disable Immutable Releases (one-time, per repo)
 
-GitHub's Immutable Releases beta has no public API surface — neither the
+GitHub's Immutable Releases beta has no public API surface, neither the
 REST nor GraphQL schema exposes a repo-level toggle (verified via schema
 introspection 2026-05-29). The Terraform `integrations/github` provider
 likewise has no attribute for it. The setting can only be flipped via

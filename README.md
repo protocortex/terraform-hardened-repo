@@ -3,7 +3,7 @@
 
 Reusable Terraform module that codifies a standard hardening posture for a
 protocortex GitHub repository: settings, branch/tag rulesets, a canonical label
-set, community/governance files, and shared CI workflows — every piece opt-in
+set, community/governance files, and shared CI workflows, every piece opt-in
 via a boolean.
 
 Consumed by [`protocortex/infra`](https://github.com/protocortex/infra)'s GitHub
@@ -45,11 +45,11 @@ provider (App auth or PAT) whose `owner` matches the repos being managed.
 
 `variables.tf` is the full public API (~90 variables). The common groups:
 
-- **Identity** — `name`, `owner` (default `protocortex`), `description`, `visibility`, `topics`.
-- **Free-tier / security** — `private_free_tier`, `enable_*` toggles.
-- **Governance files** — `manage_security_md`, `manage_code_of_conduct`, `manage_codeowners`, `manage_icla`, `manage_ccla`, `manage_license`, …
-- **Workflows** — one `manage_workflow_*` per shared workflow.
-- **Plan-time reads** — `github_token` (optional; only needed when `manage_security_md` or `enforce_pr_creation_policy` is true, for private-repo REST reads).
+- **Identity**, `name`, `owner` (default `protocortex`), `description`, `visibility`, `topics`.
+- **Free-tier / security**, `private_free_tier`, `enable_*` toggles.
+- **Governance files**, `manage_security_md`, `manage_code_of_conduct`, `manage_codeowners`, `manage_icla`, `manage_ccla`, `manage_license`, …
+- **Workflows**, one `manage_workflow_*` per shared workflow.
+- **Plan-time reads**, `github_token` (optional; only needed when `manage_security_md` or `enforce_pr_creation_policy` is true, for private-repo REST reads).
 
 ## License
 

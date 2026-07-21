@@ -14,7 +14,7 @@
 #      signed by Sigstore (Fulcio + Rekor).
 #   3. A combined SLSA v1 provenance attestation from
 #      slsa-framework/slsa-github-generator, run in an isolated workflow
-#      context the caller cannot inject into — this is the L2 -> L3 gap
+#      context the caller cannot inject into, this is the L2 -> L3 gap
 #      closer; the build environment the attestation describes is the
 #      reusable workflow's own runner, not this one.
 #   4. A GitHub Release with all three attached (tarball, .sha256

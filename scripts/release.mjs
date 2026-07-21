@@ -61,7 +61,7 @@ if (dryRun) {
   log("[DRY-RUN] will be made. Confirmation prompt is also auto-skipped.\n");
 }
 
-// ── Side-effect helpers — short-circuit in dry-run mode ─────────────────────
+// ── Side-effect helpers, short-circuit in dry-run mode ─────────────────────
 
 const writeMut = (path, content) => {
   if (dryRun) {
@@ -84,7 +84,7 @@ const runMut = (cmd, opts) => {
 const status = run("git status --porcelain");
 if (status.length > 0) {
   if (dryRun) {
-    log("Working directory is not clean (dry-run mode — proceeding anyway).");
+    log("Working directory is not clean (dry-run mode, proceeding anyway).");
   } else {
     die("Working directory is not clean. Commit or stash changes first.");
   }
@@ -126,13 +126,13 @@ if (skipTestCi) {
   }
 }
 
-// Publish dry runs gate every real release — local AND the Release workflow —
+// Publish dry runs gate every real release, local AND the Release workflow -
 // independent of --skip-test-ci. ci.yml builds and tests but never packs the
 // published artifacts, so this is the only check that the npm tarball and the
 // JSR module graph (including slow types) are sound before a tag/release is cut.
 // Skipped in --dry-run preview, where no tag/release is created anyway.
 if (dryRun) {
-  log("Skipping publish dry runs (preview mode — no release will be cut).");
+  log("Skipping publish dry runs (preview mode, no release will be cut).");
 } else {
   // npm packs dist/; build it now since the matrix (which also builds) may have
   // been skipped via --skip-test-ci. JSR packs src/, which is always present.
@@ -173,7 +173,7 @@ const [major, minor, patch] = currentVersion.split(".").map(Number);
 let newVersion;
 if (!bump) {
   newVersion = currentVersion;
-  log(`\nNo version arg given — releasing v${newVersion} from package.json.`);
+  log(`\nNo version arg given, releasing v${newVersion} from package.json.`);
 } else if (bump === "patch") {
   newVersion = `${major}.${minor}.${patch + 1}`;
 } else if (bump === "minor") {
@@ -190,7 +190,7 @@ const newTag = `v${newVersion}`;
 log(bump ? `\nRelease: v${currentVersion} -> ${newTag}` : `\nRelease: ${newTag}`);
 
 // -- Detect existing tag/release state ---------------------------------------
-// A published GitHub release is the point of no return — refuse to recreate.
+// A published GitHub release is the point of no return, refuse to recreate.
 // A tag that exists without a release is recoverable: skip the tag step and
 // proceed to publish the missing release.
 
@@ -258,7 +258,7 @@ let lastTag = "";
 try {
   lastTag = run(`git describe --tags --abbrev=0 ${releaseSha}^ 2>/dev/null`).trim();
 } catch {
-  // No earlier tag — first release.
+  // No earlier tag, first release.
 }
 let hasLastTag = false;
 if (lastTag) {
@@ -348,7 +348,7 @@ if (uncategorized.length > 0) {
   }
   changelog += "\n";
 }
-// Use lastTag (the previous release tag) as the comparison anchor — when not
+// Use lastTag (the previous release tag) as the comparison anchor, when not
 // bumping, currentVersion === newVersion so the old `v${currentVersion}...v${newVersion}`
 // link compared a tag to itself.
 changelog += hasLastTag
@@ -413,7 +413,7 @@ if (newVersion !== currentVersion) {
   jsr.version = newVersion;
   writeMut("jsr.json", JSON.stringify(jsr, null, 2) + "\n");
 } else {
-  log("\nVersion already at target — skipping package.json/jsr.json bump.");
+  log("\nVersion already at target, skipping package.json/jsr.json bump.");
 }
 
 // -- Update test badge in README ----------------------------------------------
@@ -515,14 +515,14 @@ if (stagedChanges.length > 0 || dryRun) {
   runMut(`git commit --signoff ${signFlag} --file .git/.release-msg.tmp`);
   runMut("rm -f .git/.release-msg.tmp");
 } else {
-  log("No file changes to commit — tagging current HEAD directly.");
+  log("No file changes to commit, tagging current HEAD directly.");
 }
 
 if (!localTagExists) {
   log("Tagging...");
   runMut(canSign ? `git tag -s ${newTag} -m "${newTag}"` : `git tag ${newTag} -m "${newTag}"`);
 } else {
-  log(`Skipping tag creation — ${newTag} already exists locally.`);
+  log(`Skipping tag creation, ${newTag} already exists locally.`);
 }
 
 log("Pushing...");
@@ -532,7 +532,7 @@ if (stagedChanges.length > 0 || dryRun) {
 if (!remoteTagExists) {
   runMut(`git push origin ${newTag}`);
 } else {
-  log(`Skipping tag push — ${newTag} already on origin.`);
+  log(`Skipping tag push, ${newTag} already on origin.`);
 }
 
 // -- Create GitHub release ----------------------------------------------------

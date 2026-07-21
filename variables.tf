@@ -380,7 +380,7 @@ variable "dependabot_version_updates" {
 
 variable "manage_release_script" {
   type        = bool
-  description = "Write scripts/release.mjs (changelog from conventional commits, bumps package.json + jsr.json, tags, pushes, creates GitHub release; gates on npm + JSR publish dry-runs). Node/pnpm/JSR-specific — opt in only for repos that publish to both registries (the pure-* family today). Defaults to false so Rust repos (ward, libkrun-builds) don't get a Node script pushed."
+  description = "Write scripts/release.mjs (changelog from conventional commits, bumps package.json + jsr.json, tags, pushes, creates GitHub release; gates on npm + JSR publish dry-runs). Node/pnpm/JSR-specific, opt in only for repos that publish to both registries (the pure-* family today). Defaults to false so Rust repos (ward, libkrun-builds) don't get a Node script pushed."
   default     = false
 }
 
@@ -593,7 +593,7 @@ variable "security_md_commit_message" {
 # ─── App-token secrets (opt-in, for repos under user accounts) ─────────
 #
 # Two-tier design: orgs (igorjs-iac, igorjs-forks) get the same secrets
-# at org scope via org-secrets.tf — set once per org, available to all
+# at org scope via org-secrets.tf, set once per org, available to all
 # repos in the org via `secrets.BOT_APP_*` references. User-account
 # repos (pure-*, ward, liam under igorjs) cannot use org secrets
 # (GitHub's secret model has no user-level Actions secrets), so they
@@ -607,7 +607,7 @@ variable "security_md_commit_message" {
 
 variable "manage_bot_app_secrets" {
   type        = bool
-  description = "Write `BOT_APP_CLIENT_ID` + `BOT_APP_PRIVATE_KEY` as repo-level Actions AND Dependabot secrets (the Dependabot store is what dependabot[bot]-triggered runs like dependabot-auto-merge.yml read from). Required for repos under the `igorjs` user account whose workflows use `actions/create-github-app-token` (orgs already get these as org-level secrets via org-secrets.tf — no need to set this true on org-owned repos). Defaults false. When flipping to true, also pass `bot_app_client_id = var.bot_app_client_id` and `bot_app_private_key = var.bot_app_private_key` from the root in that repo's module call — both default to empty string at the module level, so omitting them produces empty-value secrets (silently broken)."
+  description = "Write `BOT_APP_CLIENT_ID` + `BOT_APP_PRIVATE_KEY` as repo-level Actions AND Dependabot secrets (the Dependabot store is what dependabot[bot]-triggered runs like dependabot-auto-merge.yml read from). Required for repos under the `igorjs` user account whose workflows use `actions/create-github-app-token` (orgs already get these as org-level secrets via org-secrets.tf, no need to set this true on org-owned repos). Defaults false. When flipping to true, also pass `bot_app_client_id = var.bot_app_client_id` and `bot_app_private_key = var.bot_app_private_key` from the root in that repo's module call, both default to empty string at the module level, so omitting them produces empty-value secrets (silently broken)."
   default     = false
 }
 
@@ -730,7 +730,7 @@ variable "slsa_generator_ref" {
 
 variable "npm_publish_reviewers" {
   type        = list(string)
-  description = "GitHub usernames who must approve before an npm publish runs. Empty list disables the manual-approval gate (tag-only policy still applies). For a solo-author project, [] is a reasonable default — the signed-tag push is already strong gating."
+  description = "GitHub usernames who must approve before an npm publish runs. Empty list disables the manual-approval gate (tag-only policy still applies). For a solo-author project, [] is a reasonable default, the signed-tag push is already strong gating."
   default     = []
 }
 
