@@ -576,21 +576,6 @@ resource "github_repository_file" "workflow_license" {
   }
 }
 
-resource "github_repository_file" "workflow_close_superseded" {
-  count = var.manage_workflow_close_superseded ? 1 : 0
-
-  repository          = github_repository.this.name
-  file                = ".github/workflows/close-superseded-pr.yml"
-  branch              = "main"
-  content             = templatefile("${path.module}/workflows/close-superseded-pr.yml.tftpl", {})
-  commit_message      = "chore(ci): sync close-superseded-pr.yml from the hardened-repo module"
-  overwrite_on_create = true
-
-  lifecycle {
-    ignore_changes = [commit_message, commit_author, commit_email]
-  }
-}
-
 resource "github_repository_file" "workflow_dependency_review" {
   count = local.eff_manage_workflow_dependency_review ? 1 : 0
 
