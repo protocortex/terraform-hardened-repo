@@ -312,12 +312,6 @@ variable "license_checker_allow" {
   default     = ["MIT", "ISC", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "0BSD", "Unlicense", "CC0-1.0", "CC-BY-4.0", "BlueOak-1.0.0", "MIT-0", "Python-2.0"]
 }
 
-variable "manage_workflow_close_superseded" {
-  type        = bool
-  description = "Write .github/workflows/close-superseded-pr.yml (when a PR is merged, automatically closes other open PRs that touch the same files). Default true."
-  default     = true
-}
-
 variable "manage_workflow_dependency_review" {
   type        = bool
   description = "Write .github/workflows/dependency-review.yml (blocks PRs that introduce dependencies with known CVEs, complementing osv-scan which runs post-merge). Free for public repos; set false for private repos on the free tier."
