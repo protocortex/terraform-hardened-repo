@@ -280,7 +280,7 @@ variable "manage_workflow_cla_dco" {
 variable "manage_workflow_scorecard" {
   type        = bool
   description = "Write .github/workflows/scorecard.yml (OpenSSF Scorecard scan; pushes to https://api.scorecard.dev/ for a public README badge)."
-  default     = true
+  default     = null
 }
 
 variable "manage_workflow_osv_scan" {
@@ -304,7 +304,7 @@ variable "manage_workflow_clean_workflow" {
 variable "manage_workflow_clanker_filter" {
   type        = bool
   description = "Write .github/workflows/clanker-filter.yml (rejects AI-generated PRs and PRs without a linked issue on every PR open/reopen event). Default true for all repos; set false for private repos or repos that accept machine-generated PRs."
-  default     = true
+  default     = null
 }
 
 variable "clanker_filter_allowlist" {
@@ -515,13 +515,13 @@ variable "require_signatures" {
 variable "required_pr_approvals" {
   type        = number
   description = "required_approving_review_count for the pull_request rule. 0 = no required reviewer (PR still required, just no approvals). 1 = solo dev with admin bypass."
-  default     = 0
+  default     = null
 }
 
 variable "require_code_owner_review" {
   type        = bool
   description = "Enable require_code_owner_review on the pull_request rule. Activates CODEOWNERS enforcement."
-  default     = false
+  default     = null
 }
 
 variable "allowed_merge_methods" {
@@ -792,3 +792,36 @@ variable "release_wait_timer_minutes" {
   }
 }
 
+
+# ─── Hardening profile ─────────────────────────────────────────────────
+
+variable "profile" {
+  type        = string
+  description = <<-EOT
+    Team shape of the project, which decides the rules that only make sense with
+    more than one maintainer.
+
+    "solo" (default): a single maintainer. Review rules are relaxed because they
+    would otherwise deadlock the repo, since GitHub does not let you approve your
+    own pull request. Required approvals drop to 0, code-owner review is off, and
+    the clanker filter (which polices multi-contributor PR noise) is off.
+
+    "team": more than one maintainer. Required approvals go to 1, code-owner
+    review is on, and the clanker filter is on.
+
+    This axis is independent of visibility. Public versus private is handled by
+    the capability gate, which derives from visibility on its own, so the two
+    compose: solo-private, solo-public, team-private and team-public all fall out
+    without naming four presets.
+
+    The profile only supplies defaults. Setting required_pr_approvals,
+    require_code_owner_review or manage_workflow_clanker_filter explicitly always
+    wins. DCO and CLA enforcement is deliberately NOT part of this axis: it
+    applies to every repo, solo or team, public or private.
+  EOT
+  default     = "solo"
+  validation {
+    condition     = contains(["solo", "team"], var.profile)
+    error_message = "profile must be one of: solo, team."
+  }
+}

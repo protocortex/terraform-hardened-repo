@@ -26,10 +26,17 @@ terraform {
   }
 }
 
-# ─── Free-tier preset: effective variable resolution ───────────────────
+# ─── Effective variable resolution ─────────────────────────────────────
 #
-# When private_free_tier = true the eight Pro-only settings are forced off
-# regardless of their individual var values. All resources below read the
+# Two independent axes decide the posture, and they compose:
+#
+#   1. Capability gate, derived from visibility. Private repos on the free tier
+#      get a 403 for the eight Pro-only settings, so those are forced off, and
+#      applied automatically once the repo is public.
+#   2. Hardening profile (var.profile), solo or team. Decides the rules that
+#      only make sense with more than one maintainer, such as required reviews.
+#
+# Explicit variables always override both. All resources below read the
 # local.eff_* values instead of var.* directly.
 
 locals {
@@ -52,6 +59,26 @@ locals {
   eff_enable_private_vulnerability_reporting = local._ftr ? false : var.enable_private_vulnerability_reporting
   eff_protect_default_branch                 = local._ftr ? false : var.protect_default_branch
   eff_protect_tag_pattern                    = local._ftr ? null : var.protect_tag_pattern
+
+  # ── Profile-derived defaults ──
+  # var.profile decides the rules that only make sense with more than one
+  # maintainer. A solo repo cannot satisfy required reviews (GitHub does not let
+  # you approve your own PR), so demanding them would deadlock the repo. An
+  # explicit var always wins over the profile.
+  _team = var.profile == "team"
+
+  eff_required_pr_approvals          = var.required_pr_approvals != null ? var.required_pr_approvals : (local._team ? 1 : 0)
+  eff_require_code_owner_review      = var.require_code_owner_review != null ? var.require_code_owner_review : local._team
+  eff_manage_workflow_clanker_filter = var.manage_workflow_clanker_filter != null ? var.manage_workflow_clanker_filter : local._team
+
+  # Scorecard is capability-derived, not profile-derived: it publishes to the
+  # public api.scorecard.dev and only works on public repos, so it follows
+  # visibility exactly like the free-tier gate above.
+  eff_manage_workflow_scorecard = var.manage_workflow_scorecard != null ? var.manage_workflow_scorecard : (var.visibility == "public")
+
+  # NOTE: manage_workflow_cla_dco is deliberately absent here. DCO and CLA
+  # enforcement applies to every repo, solo or team, public or private, so it is
+  # never derived off by a profile or by visibility.
 }
 
 check "private_repo_free_tier_guard" {
@@ -207,9 +234,9 @@ resource "github_repository_ruleset" "default_branch" {
     required_signatures = var.require_signatures
 
     pull_request {
-      required_approving_review_count   = var.required_pr_approvals
+      required_approving_review_count   = local.eff_required_pr_approvals
       dismiss_stale_reviews_on_push     = true
-      require_code_owner_review         = var.require_code_owner_review
+      require_code_owner_review         = local.eff_require_code_owner_review
       require_last_push_approval        = false
       required_review_thread_resolution = true
       allowed_merge_methods             = var.allowed_merge_methods
@@ -489,7 +516,7 @@ resource "github_repository_file" "workflow_cla_dco" {
 }
 
 resource "github_repository_file" "workflow_scorecard" {
-  count = var.manage_workflow_scorecard ? 1 : 0
+  count = local.eff_manage_workflow_scorecard ? 1 : 0
 
   repository          = github_repository.this.name
   file                = ".github/workflows/scorecard.yml"
@@ -549,7 +576,7 @@ resource "github_repository_file" "workflow_clean_workflow" {
 }
 
 resource "github_repository_file" "workflow_clanker_filter" {
-  count = var.manage_workflow_clanker_filter ? 1 : 0
+  count = local.eff_manage_workflow_clanker_filter ? 1 : 0
 
   repository = github_repository.this.name
   file       = ".github/workflows/clanker-filter.yml"
