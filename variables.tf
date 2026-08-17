@@ -10,7 +10,6 @@ variable "name" {
 variable "owner" {
   type        = string
   description = "GitHub owner (user or org) of the repository. Used to construct API URLs and the `repo_full_name` template variable. Must match the owner configured on the github provider passed in via `providers = { github = github.<alias> }`."
-  default     = "protocortex"
 }
 
 variable "description" {
@@ -168,8 +167,7 @@ variable "extra_labels" {
 
 variable "maintainer" {
   type        = string
-  description = "Maintainer name referenced in ICLA/CCLA legal text (e.g. 'protocortex')."
-  default     = "protocortex"
+  description = "GitHub handle of the maintainer, used for CODEOWNERS, the CLA signature table, and the ICLA/CCLA legal text. Must be a real user or team; an organisation handle cannot be a code owner."
 }
 
 variable "manage_code_of_conduct" {
@@ -297,7 +295,7 @@ variable "manage_workflow_betterleaks" {
 
 variable "manage_workflow_clean_workflow" {
   type        = bool
-  description = "Write .github/workflows/clean-workflow.yml (weekly scheduled cleanup of old workflow run history using igorjs/gh-actions-clean-workflow). Deletes runs older than 7 days while keeping the 10 most recent per workflow. Default true so every managed repo stays tidy automatically; set false only on repos where you need manual control over workflow history retention."
+  description = "Write .github/workflows/clean-workflow.yml (weekly scheduled cleanup of old workflow run history using the gh-actions-clean-workflow action). Deletes runs older than 7 days while keeping the 10 most recent per workflow. Default true so every managed repo stays tidy automatically; set false only on repos where you need manual control over workflow history retention."
   default     = true
 }
 
@@ -603,8 +601,7 @@ variable "manage_security_md" {
 
 variable "security_contact_email" {
   type        = string
-  description = "Email address shown in SECURITY.md for vulnerability reports. Used alongside GitHub Security Advisories as the second reporting channel."
-  default     = "security@protocortex.ai"
+  description = "Email address shown in SECURITY.md for vulnerability reports, alongside GitHub Security Advisories. Required: there is no safe default, since a wrong address silently misdirects vulnerability reports."
 }
 
 variable "security_md_commit_message" {
@@ -615,10 +612,10 @@ variable "security_md_commit_message" {
 
 # ─── App-token secrets (opt-in, for repos under user accounts) ─────────
 #
-# Two-tier design: orgs (igorjs-iac, igorjs-forks) get the same secrets
+# Two-tier design: org-owned repos inherit org-level secrets
 # at org scope via org-secrets.tf, set once per org, available to all
 # repos in the org via `secrets.BOT_APP_*` references. User-account
-# repos (pure-*, ward, liam under igorjs) cannot use org secrets
+# repos owned by a user account cannot use org secrets
 # (GitHub's secret model has no user-level Actions secrets), so they
 # opt in to per-repo TF-managed secrets via this variable. The values
 # come from the same HCP workspace variables in both cases, so there's
@@ -630,7 +627,7 @@ variable "security_md_commit_message" {
 
 variable "manage_bot_app_secrets" {
   type        = bool
-  description = "Write `BOT_APP_CLIENT_ID` + `BOT_APP_PRIVATE_KEY` as repo-level Actions AND Dependabot secrets (the Dependabot store is what dependabot[bot]-triggered runs like dependabot-auto-merge.yml read from). Required for repos under the `igorjs` user account whose workflows use `actions/create-github-app-token` (orgs already get these as org-level secrets via org-secrets.tf, no need to set this true on org-owned repos). Defaults false. When flipping to true, also pass `bot_app_client_id = var.bot_app_client_id` and `bot_app_private_key = var.bot_app_private_key` from the root in that repo's module call, both default to empty string at the module level, so omitting them produces empty-value secrets (silently broken)."
+  description = "Write `BOT_APP_CLIENT_ID` + `BOT_APP_PRIVATE_KEY` as repo-level Actions AND Dependabot secrets (the Dependabot store is what dependabot[bot]-triggered runs like dependabot-auto-merge.yml read from). Required for repos under a user account whose workflows use `actions/create-github-app-token` (org-owned repos already inherit these as org-level secrets, so leave this false there). Defaults false. When flipping to true, also pass `bot_app_client_id = var.bot_app_client_id` and `bot_app_private_key = var.bot_app_private_key` from the root in that repo's module call, both default to empty string at the module level, so omitting them produces empty-value secrets (silently broken)."
   default     = false
 }
 
@@ -724,7 +721,7 @@ variable "pnpm_workspace_settings" {
 
 variable "slsa_generator_ref" {
   type        = string
-  description = "Tag ref of slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml. MUST be a vX.Y.Z release tag, never a commit SHA: the generator resolves its pre-built builder binary from the release matching the tag ref and hard-fails at runtime on SHA refs (\"Invalid ref: ... Expected ref of the form refs/tags/vX.Y.Z\"). Bump via PRs to the hardened-repo module so all consuming repos move together. Matches the tag pinned in igorjs/ward."
+  description = "Tag ref of slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml. MUST be a vX.Y.Z release tag, never a commit SHA: the generator resolves its pre-built builder binary from the release matching the tag ref and hard-fails at runtime on SHA refs (\"Invalid ref: ... Expected ref of the form refs/tags/vX.Y.Z\"). Bump via PRs to the hardened-repo module so all consuming repos move together."
   default     = "v2.1.0"
 
   validation {

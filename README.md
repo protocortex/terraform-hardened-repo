@@ -2,12 +2,11 @@
 # terraform-hardened-repo
 
 Reusable Terraform module that codifies a standard hardening posture for a
-protocortex GitHub repository: settings, branch/tag rulesets, a canonical label
-set, community/governance files, and shared CI workflows, every piece opt-in
-via a boolean.
+GitHub repository: settings, branch/tag rulesets, a canonical label set,
+community/governance files, and shared CI workflows, every piece opt-in via a
+boolean.
 
-Consumed by [`protocortex/infra`](https://github.com/protocortex/infra)'s GitHub
-governance root. Pin it by tag.
+Pin it by tag.
 
 ## Usage
 
@@ -19,11 +18,15 @@ module "my_repo" {
   description = "…"
   visibility  = "private"
 
-  # All protocortex repos are private on GitHub free tier: one switch forces
-  # off the eight Pro-only features GitHub 403s (rulesets, vuln alerts, secret
+  owner                  = "my-org"
+  maintainer             = "my-github-handle"
+  security_contact_email = "security@example.com"
+
+  # private_free_tier is derived from visibility by default: the eight features
+  # GitHub 403s on a free-tier private repo (rulesets, vuln alerts, secret
   # scanning + push protection, Dependabot security updates, dependency review,
-  # private vuln reporting).
-  private_free_tier = true
+  # private vuln reporting) switch off automatically, and switch on when the
+  # repo goes public. Set it explicitly only on a paid plan.
 
   # WARNING: manage_labels = true DELETES any label not in the canonical set.
   manage_labels = false
@@ -45,7 +48,7 @@ provider (App auth or PAT) whose `owner` matches the repos being managed.
 
 `variables.tf` is the full public API (~90 variables). The common groups:
 
-- **Identity**, `name`, `owner` (default `protocortex`), `description`, `visibility`, `topics`.
+- **Identity**, `name`, `owner` (required), `description`, `visibility`, `topics`.
 - **Free-tier / security**, `private_free_tier`, `enable_*` toggles.
 - **Governance files**, `manage_security_md`, `manage_code_of_conduct`, `manage_codeowners`, `manage_icla`, `manage_ccla`, `manage_license`, …
 - **Workflows**, one `manage_workflow_*` per shared workflow.
