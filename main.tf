@@ -2,7 +2,7 @@
 #
 # Module: hardened-repo
 #
-# Codifies the standard hardening posture for a protocortex repo.
+# Codifies a standard hardening posture for a GitHub repository.
 # Configurable so that each repo's per-repo .tf file can express its
 # specific ruleset (signed commits on/off, status checks list, allowed
 # merge methods, etc.) without diverging from the module shape.
@@ -267,7 +267,7 @@ resource "github_repository_ruleset" "default_branch" {
 
 # ─── Managed files: SECURITY.md ────────────────────────────────────────
 #
-# Generic security policy across the protocortex repo set: GHSA + email
+# Generic security policy across the managed repo set: GHSA + email
 # reporting, standard timeline, generic in/out-of-scope, pointer at
 # the hardened-repo module for the cross-repo hardening posture. Only `repo_full_name`,
 # `contact_email`, and the auto-detected `latest_version` vary per repo;
@@ -1134,7 +1134,7 @@ resource "github_repository_file" "license" {
 
 # ─── Labels ────────────────────────────────────────────────────────────
 #
-# Canonical label set across all protocortex repos. Mirrors what pure-*/
+# Canonical label set applied to every managed repo. Mirrors what
 # ward already have (colors + descriptions taken from pure-fx as
 # representative). Includes:
 #   - GitHub default labels (bug, enhancement, documentation, etc.)
