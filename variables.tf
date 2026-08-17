@@ -63,8 +63,27 @@ variable "has_discussions" {
 
 variable "private_free_tier" {
   type        = bool
-  description = "Convenience preset for private repos on GitHub's free tier. When true, forces off the eight settings the free tier rejects with a 403: rulesets (protect_default_branch, protect_tag_pattern), vulnerability alerts, secret scanning (+ push protection), Dependabot security updates, dependency-review workflow, and private vulnerability reporting. Individual vars still override if set false explicitly, but cannot turn a feature ON while this is true."
-  default     = false
+  description = <<-EOT
+    Capability gate for the eight settings GitHub's free tier rejects with a 403
+    on private repos: rulesets (protect_default_branch, protect_tag_pattern),
+    vulnerability alerts, secret scanning (+ push protection), Dependabot
+    security updates, dependency-review workflow, and private vulnerability
+    reporting.
+
+    Leave null (the default) to derive it from visibility, which is the correct
+    behaviour for almost every caller: private means the features are
+    unavailable and are forced off, public means they are free and apply. The
+    gate re-evaluates on every plan, so flipping a repo public applies them and
+    flipping it back private reverts them, with no second flag to keep in sync.
+
+    Set it explicitly only to override that derivation: false on a private repo
+    that really is on GitHub Pro/Team/GHAS (the features are available, so let
+    them apply), or true to force everything off regardless of visibility.
+
+    Individual feature vars still override downward, but cannot turn a feature
+    ON while the gate is closed.
+  EOT
+  default     = null
 }
 
 variable "enable_vulnerability_alerts" {

@@ -33,10 +33,16 @@ terraform {
 # local.eff_* values instead of var.* directly.
 
 locals {
-  # When private_free_tier is on, the Pro-only features are forced off
-  # regardless of their individual var values. This is the single knob
-  # a new free-tier private repo flips instead of eight separate ones.
-  _ftr = var.private_free_tier
+  # Capability gate. Verified from visibility, the only signal that is always
+  # available: GitHub does not expose a repo's plan on the repo object, and the
+  # org plan endpoint needs auth this module's http data sources do not have.
+  #
+  # Public repos get the eight features free, private repos on the free tier get
+  # a 403, so deriving from visibility both prevents those errors and makes the
+  # flip automatic: going public applies them, going private reverts them. An
+  # explicit private_free_tier overrides the derivation (e.g. false on a private
+  # repo that is genuinely on Pro/Team/GHAS).
+  _ftr = var.private_free_tier != null ? var.private_free_tier : (var.visibility == "private")
 
   eff_enable_vulnerability_alerts            = local._ftr ? false : var.enable_vulnerability_alerts
   eff_enable_secret_scanning                 = local._ftr ? false : var.enable_secret_scanning
@@ -52,7 +58,7 @@ check "private_repo_free_tier_guard" {
   assert {
     condition = (
       var.visibility != "private"
-      || var.private_free_tier
+      || local._ftr
       || !(
         var.protect_default_branch
         || var.protect_tag_pattern != null
@@ -64,7 +70,7 @@ check "private_repo_free_tier_guard" {
         || var.manage_workflow_dependency_review
       )
     )
-    error_message = "Repo ${var.name} is private with a Pro-only feature enabled (rulesets, vulnerability alerts, secret scanning, Dependabot security updates, private vuln reporting, or dependency-review). On the free tier GitHub returns 403 at apply. Set private_free_tier = true, or set the individual feature vars to false, or confirm the account is on GitHub Pro/GHAS and suppress this by leaving private_free_tier unset."
+    error_message = "Repo ${var.name} is private and private_free_tier was explicitly set to false while a Pro-only feature is enabled (rulesets, vulnerability alerts, secret scanning, Dependabot security updates, private vuln reporting, or dependency-review). That override tells the module the repo is on GitHub Pro/Team/GHAS; on the free tier GitHub returns 403 at apply. Either drop the override so the gate derives from visibility and forces these off, set the individual feature vars to false, or make the repo public."
   }
 }
 
