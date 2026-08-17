@@ -76,6 +76,11 @@ locals {
   # visibility exactly like the free-tier gate above.
   eff_manage_workflow_scorecard = var.manage_workflow_scorecard != null ? var.manage_workflow_scorecard : (var.visibility == "public")
 
+  # LICENSE body to write. AGPL-3.0-only and the legacy AGPL-3.0 alias share the
+  # same text: the only-versus-or-later distinction is expressed in per-file
+  # SPDX headers, not in the LICENSE file, so both map to one template.
+  license_template = var.license == "AGPL-3.0-only" ? "AGPL-3.0" : var.license
+
   # NOTE: manage_workflow_cla_dco is deliberately absent here. DCO and CLA
   # enforcement applies to every repo, solo or team, public or private, so it is
   # never derived off by a profile or by visibility.
@@ -1115,7 +1120,7 @@ resource "github_repository_file" "license" {
   repository = github_repository.this.name
   file       = "LICENSE"
   branch     = "main"
-  content = templatefile("${path.module}/licenses/${var.license}.tftpl", {
+  content = templatefile("${path.module}/licenses/${local.license_template}.tftpl", {
     copyright_holder = var.maintainer
     copyright_year   = var.license_year
   })
