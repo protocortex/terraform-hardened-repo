@@ -471,12 +471,22 @@ variable "contributors_seed_date" {
 
 variable "license" {
   type        = string
-  description = "SPDX identifier of the project license. Currently supported: Apache-2.0 (default), AGPL-3.0, MIT."
-  default     = "Apache-2.0"
+  description = <<-EOT
+    SPDX identifier of the project license, written to LICENSE.
+
+    Defaults to AGPL-3.0-only: copyleft is the safe default, because a repo that
+    never states a license is worse than one that states a strong one, and a
+    permissive default silently gives away more than intended. Set it explicitly
+    to publish under something else.
+
+    Supported: AGPL-3.0-only (default), AGPL-3.0 (legacy alias for the same
+    text), Apache-2.0, MIT.
+  EOT
+  default     = "AGPL-3.0-only"
 
   validation {
-    condition     = contains(["Apache-2.0", "AGPL-3.0", "MIT"], var.license)
-    error_message = "Supported licenses: Apache-2.0, AGPL-3.0, MIT. Add the corresponding licenses/<spdx>.tftpl template to extend."
+    condition     = contains(["AGPL-3.0-only", "AGPL-3.0", "Apache-2.0", "MIT"], var.license)
+    error_message = "Supported licenses: AGPL-3.0-only, AGPL-3.0, Apache-2.0, MIT. Add the corresponding licenses/<spdx>.tftpl template to extend."
   }
 }
 
