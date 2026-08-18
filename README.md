@@ -1,5 +1,5 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
-# terraform-hardened-repo
+# terraform-github-security-repo
 
 Reusable Terraform module that codifies a standard hardening posture for a
 GitHub repository: settings, branch/tag rulesets, a canonical label set,
@@ -12,7 +12,7 @@ Pin it by tag.
 
 ```hcl
 module "my_repo" {
-  source = "git::https://github.com/protocortex/terraform-hardened-repo.git?ref=v0.1.0"
+  source = "git::https://github.com/protocortex/terraform-github-security-repo.git?ref=v0.1.0"
 
   name        = "my-repo"
   description = "…"
