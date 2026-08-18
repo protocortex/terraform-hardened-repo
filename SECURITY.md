@@ -7,7 +7,7 @@
 To report a vulnerability, use one of:
 
 - **GitHub Security Advisories**: [Report a vulnerability](https://github.com/zeroconfigio/terraform-github-security-repo/security/advisories/new)
-- **Email**: **security@protocortex.ai**
+- **Email**: **hello@zeroconfig.io**
 
 Include:
 
