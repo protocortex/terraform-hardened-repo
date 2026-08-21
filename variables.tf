@@ -93,6 +93,12 @@ variable "enable_vulnerability_alerts" {
 
 # ─── Merge button + commit metadata ────────────────────────────────────
 
+variable "allow_auto_merge" {
+  type        = bool
+  description = "Enable the auto-merge button on PRs (free for public repos; requires a paid plan for private repos). Forced off by the free-tier capability gate on private repos, where GitHub accepts the write but keeps reporting false, so asking for true yields a diff that never converges."
+  default     = true
+}
+
 variable "allow_update_branch" {
   type        = bool
   description = "Show the 'Update branch' button on PRs so head branches can be fast-forwarded to base."
