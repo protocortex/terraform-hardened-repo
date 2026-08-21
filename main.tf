@@ -51,6 +51,12 @@ locals {
   # repo that is genuinely on Pro/Team/GHAS).
   _ftr = var.private_free_tier != null ? var.private_free_tier : (var.visibility == "private")
 
+  # Auto-merge belongs on this gate for the same reason as the rest, but fails
+  # differently and so is easy to miss: GitHub does not 403 the write, it accepts
+  # it, keeps reporting false, and leaves Terraform with an
+  # "allow_auto_merge: false -> true" diff that can never converge. Permanent
+  # noise on a governance resource is how a real change gets skimmed past.
+  eff_allow_auto_merge                       = local._ftr ? false : var.allow_auto_merge
   eff_enable_vulnerability_alerts            = local._ftr ? false : var.enable_vulnerability_alerts
   eff_enable_secret_scanning                 = local._ftr ? false : var.enable_secret_scanning
   eff_enable_secret_scanning_push_protection = local._ftr ? false : var.enable_secret_scanning_push_protection
@@ -124,10 +130,14 @@ resource "github_repository" "this" {
   # Repo-level merge button toggles. These must agree with the
   # allowed_merge_methods in the pull_request rule below; GitHub picks
   # the intersection of the two.
-  allow_merge_commit     = contains(var.allowed_merge_methods, "merge")
-  allow_squash_merge     = contains(var.allowed_merge_methods, "squash")
-  allow_rebase_merge     = contains(var.allowed_merge_methods, "rebase")
-  allow_auto_merge       = true
+  allow_merge_commit = contains(var.allowed_merge_methods, "merge")
+  allow_squash_merge = contains(var.allowed_merge_methods, "squash")
+  allow_rebase_merge = contains(var.allowed_merge_methods, "rebase")
+  # Derived, not hardcoded true: auto-merge is Pro-only on private repos. See
+  # eff_allow_auto_merge above. Deriving from visibility rather than pinning a
+  # literal matters for repos that flip public to run CI and private again,
+  # where either literal would be wrong half the time.
+  allow_auto_merge       = local.eff_allow_auto_merge
   allow_update_branch    = var.allow_update_branch
   delete_branch_on_merge = true
 
